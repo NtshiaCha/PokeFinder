@@ -1,24 +1,88 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from 'react';
+import Axios from 'axios';
 
-function App() {
+import './App.css';
+import HeaderComponent from './components/header.components';
+import PokeDisplayComponent from './components/poke-display.components';
+import InputComponent from './components/input.components';
+import HistoryComponent from './components/history.components';
+
+export interface PokeData {
+  name: string;
+  id: number;
+  image: string;
+}
+
+const App: React.FC = () => {
+
+  const [pokeData, setPokeData] = useState<PokeData>({
+    name: 'Pikachu',
+    id: 25,
+    image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png'
+  });
+  const [pokeArr, setPokeArr] = useState<PokeData[]>([pokeData]);
+
+
+  const updateHistory = (pokemon: PokeData) => {
+    if (pokeArr.some(p => p.id === pokemon.id)) {
+      const arr = [pokemon, ...pokeArr.filter(p => p.id !== pokemon.id)];
+      setPokeArr(arr);
+    } else {
+      // Copying array and updating state with new array
+      const newArr = [pokemon, ...pokeArr];
+      setPokeArr(newArr);
+    }
+  }
+
+  const updateDisplayPokemon = (pokemon: PokeData) => {
+    setPokeData(pokemon);
+  }
+
+  const processNewPokemonData = (pokemon: PokeData) => {
+        // Updating state for main display pokemon
+        updateDisplayPokemon(pokemon);
+
+        updateHistory(pokemon);
+  }
+
+  const userSubmitReceived = (str: string): void => {
+    const url = `https://pokeapi.co/api/v2/pokemon/${str}/`;
+
+    // Axios.post('http://localhost:8080/cors-demo/cors')
+    //   .then(response => {
+    //     console.log(response);
+    //   }).catch(err => console.log(err))
+
+    Axios.get(url)
+      .then(response => {
+        const rawName = response.data.name;
+        const name = rawName[0].toUpperCase() + rawName.slice(1);
+
+        const id = response.data.id;
+        const image = response.data.sprites.front_default;
+
+        processNewPokemonData({ name, id, image });
+
+      }).catch(err => {
+        console.log(err);
+      });
+  }
+
+
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <HeaderComponent></HeaderComponent>
+      <PokeDisplayComponent
+        pokeData={pokeData}
+      ></PokeDisplayComponent>
+      <InputComponent
+        userSubmitReceived={(str: string) => userSubmitReceived(str)}
+      ></InputComponent>
+      <HistoryComponent
+        pokeArr={pokeArr}
+        processNewPokemonData={processNewPokemonData}
+      ></HistoryComponent>
     </div>
   );
 }
