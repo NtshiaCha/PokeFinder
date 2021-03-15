@@ -3,7 +3,7 @@ import Axios from 'axios';
 
 import './App.css';
 import HeaderComponent from './components/header.components';
-import PokeDisplayComponent from './components/poke-display.components';
+import PokeDisplayComponent from './components/display.component';
 import InputComponent from './components/input.components';
 import HistoryComponent from './components/history.components';
 
